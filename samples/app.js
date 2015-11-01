@@ -1,6 +1,30 @@
 import React, {Component} from '../src/react';
 import ReactDali from '../src/ReactDali';
 
+var Dali = require('../build/Release/dali');
+
+let window = {
+  x: 800,
+  y: 500,
+  width: 800,
+  height: 600,
+  transparent: false,
+  name: 'my-first-dali-app'
+};
+
+let viewMode = {
+  'stereoscopic-mode': 'mono',
+  'stereo-base': 65
+};
+
+let options = {
+  'window': window,
+  'view-mode': viewMode
+};
+
+var dali = Dali(options);
+
+
 class App extends Component{
 
 	componentWillMount(){
@@ -20,11 +44,4 @@ class App extends Component{
 	}
 }
 
-// will be defined by dali-node
-var stage = {};
-
-
-/* how to know element type (custon-class, generic-class ... etc) 
- * when jsx is exchanged as babel-node. babel-node know that?
- */
-ReactDali.render(<App/>, stage);
+ReactDali.render(<App/>, dali);

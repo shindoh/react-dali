@@ -4,24 +4,57 @@ import instantiateReactComponent from 'react/lib/instantiateReactComponent';
 import ReactInstanceHandles from 'react/lib/ReactInstanceHandles';
 import ReactUpdates from 'react/lib/ReactUpdates';
 
+import invariant from 'invariant';
 import ReactDaliInjection from './ReactDaliInjection';
 
 //brief to react mount
 
 ReactDaliInjection.inject();
 
-var TopLevelWraper = function() {};
-TopLevelWraper.prototype.inReactComponent = {};
-TopLevelWraper.prototype.render = function(){
+var TopLevelWrapper = function() {};
+TopLevelWrapper.prototype.isReactComponent = {};
+TopLevelWrapper.displayName = 'TopLevelWrapper';
+TopLevelWrapper.prototype.render = function(){
 	return this.props;
 }
 
-export default class ReactDail{
+function mountComponentIntoNode(
+	componentInstance: ReactComponent, 
+	rootID: number,
+	container: any,
+    transaction: any,
+    context: any) {
 
-	static render(nextElement, container){
+	var markup = ReactReconciler.mountComponent(componentInstance, rootID, transaction, context);
+
+}
+
+//??? what does mean batch in this case ???
+function batchedMountComponentIntoNode(componentInstance, rootID, container, context) {
+
+
+
+  var transaction = ReactUpdates.ReactReconcileTransaction.getPooled();
+  transaction.perform(mountComponentIntoNode, null, componentInstance, rootID, container, transaction, context);
+  ReactUpdates.ReactReconcileTransaction.release(transaction);
+}
+
+
+var ReactDail = {
+
+	render(
+		nextElement: ReactElement, 
+		context: any
+	): void {
+			
+		invariant(
+			(context['BUILD'] && (context['BUILD'].toString().indexOf('Dali')==0)),
+			"context must be Dali object.");
+
+		var container = context.stage;
 
 		var nextWrappedelement = new ReactElement(
-			TopLevelWraper,
+			TopLevelWrapper,
 			null,
 			null,
 			null,
@@ -35,37 +68,13 @@ export default class ReactDail{
 
 		//register container
 		var reactRootID = ReactInstanceHandles.createReactRootID(0);
-
-
+	
 		ReactUpdates.batchedUpdates(
-			(componentInstance) => {
-		        var transaction = ReactUpdates.ReactReconcileTransaction.getPooled(false);
-
-				transaction.perform(
-					(componentInstance,
-					 rootID, 
-					 container, 
-					 transaction, 
-					 shouldReuseMarkup, 
-					 context) => {
-					 	var markup = ReactReconciler.mountComponent(componentInstance, rootID, transaction, context);
-						componentInstance._renderedComponent._topLevelWrapper = componentInstance;
- // 						ReactMount._mountImageIntoNode(markup, container, shouldReuseMarkup, transaction);
-
-					},
-					null,
-					componentInstance,
-				    reactRootID,
-				    container,
-			        transaction,
-			        false,  
-			        {}	// ?? context meaning in here
-				);
-
-		        ReactUpdates.ReactReconcileTransaction.release(transaction);	
-			},
-			componentInstance
-		);
+			batchedMountComponentIntoNode,
+			componentInstance,
+			reactRootID,
+			container,
+			this.screen);
 
 	}
 }
@@ -73,6 +82,9 @@ export default class ReactDail{
 
 
 
+
+
+export default ReactDail;
 
 
 

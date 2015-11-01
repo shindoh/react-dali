@@ -9,6 +9,7 @@ export default class ReactDaliInjection{
 
 	static inject(){
 
+
 	  ReactInjection.Updates.injectReconcileTransaction(ReactDaliReconcileTransaction);
 	  
 	  ReactInjection.Updates.injectBatchingStrategy(ReactDefaultBatchingStrategy);
